@@ -4,18 +4,19 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let particles = [];
-let tick = 0; // Untuk mengatur ritme detak jantung
+let tick = 0; 
 
 class Particle {
     constructor(x, y) {
+        // Offset ke tengah layar agar hati tidak muncul di pojok kiri atas (0,0)
+        this.centerX = canvas.width / 2;
+        this.centerY = canvas.height / 2;
         this.baseX = x;
         this.baseY = y;
-        this.x = x;
-        this.y = y;
+        this.x = this.centerX + x;
+        this.y = this.centerY + y;
         this.size = Math.random() * 2 + 1;
-        this.color = 'rgba(255, 0, 50, 0.8)';
-        this.speed = Math.random() * 0.05 + 0.02;
-        this.angle = Math.random() * Math.PI * 2;
+        this.color = 'rgba(255, 0, 80, 0.8)';
     }
 
     draw() {
@@ -27,14 +28,13 @@ class Particle {
     }
 
     update() {
-        // Efek Berdetak Otomatis (Beating Effect)
-        // Math.sin(tick) menciptakan gerakan naik turun yang halus
+        // Efek Detak Jantung
         let beat = 1 + Math.sin(tick) * 0.1; 
         
-        let targetX = this.baseX * beat;
-        let targetY = this.baseY * beat;
+        let targetX = this.centerX + (this.baseX * beat);
+        let targetY = this.centerY + (this.baseY * beat);
 
-        // Gerakan halus menuju posisi detak
+        // Gerakan halus menuju posisi target
         this.x += (targetX - this.x) * 0.1;
         this.y += (targetY - this.y) * 0.1;
     }
@@ -42,14 +42,41 @@ class Particle {
 
 function init() {
     particles = [];
-    const step = 0.02; // Semakin kecil angka ini, bintik semakin padat
-    
-    // Looping untuk membuat bintik-bintik di area hati
+    const step = 0.1; // Mengurangi kepadatan sedikit agar performa terjaga
+    const r = 15;    // Skala ukuran hati
+
     for (let i = 0; i < Math.PI * 2; i += step) {
-        // Rumus Parametrik Hati
-        const r = 15; // Skala ukuran
+        // Rumus Parametrik Tepi Hati
         let tx = r * 16 * Math.pow(Math.sin(i), 3);
         let ty = -r * (13 * Math.cos(i) - 5 * Math.cos(2 * i) - 2 * Math.cos(3 * i) - Math.cos(4 * i));
 
-        // Untuk mengisi bagian dalam, kita tarik garis dari pusat (0,0) ke tepi (tx,ty)
-        for (let j = 0; j < 1; j += 0
+        // Mengisi bagian dalam hati dengan partikel acak di antara pusat dan tepi
+        for (let j = 0; j < 1; j += 0.2) { // PERBAIKAN: j += 0.2 agar tidak infinite loop
+            particles.push(new Particle(tx * j, ty * j));
+        }
+    }
+}
+
+function animate() {
+    // Memberikan efek trail sedikit dengan fillStyle transparan
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach(p => {
+        p.update();
+        p.draw();
+    });
+
+    tick += 0.1; // Menambah kecepatan detak
+    requestAnimationFrame(animate);
+}
+
+init();
+animate();
+
+// Menangani perubahan ukuran layar
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    init();
+});

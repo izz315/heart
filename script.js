@@ -4,31 +4,22 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let particles = [];
-const mouse = {
-    x: null,
-    y: null,
-    radius: 100 // Jarak interaksi kursor
-}
-
-window.addEventListener('mousemove', (event) => {
-    mouse.x = event.x;
-    mouse.y = event.y;
-});
+let tick = 0; // Untuk mengatur ritme detak jantung
 
 class Particle {
     constructor(x, y) {
-        this.x = Math.random() * canvas.width; // Posisi awal acak
-        this.y = Math.random() * canvas.height;
-        this.destX = x; // Posisi tujuan (membentuk hati)
-        this.destY = y;
-        this.size = 1.5;
         this.baseX = x;
         this.baseY = y;
-        this.density = (Math.random() * 30) + 1; // Kecepatan kembali
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 2 + 1;
+        this.color = 'rgba(255, 0, 50, 0.8)';
+        this.speed = Math.random() * 0.05 + 0.02;
+        this.angle = Math.random() * Math.PI * 2;
     }
 
     draw() {
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.closePath();
@@ -36,60 +27,29 @@ class Particle {
     }
 
     update() {
-        let dx = mouse.x - this.x;
-        let dy = mouse.y - this.y;
-        let distance = Math.sqrt(dx * dx + dy * dy);
-        let forceDirectionX = dx / distance;
-        let forceDirectionY = dy / distance;
-        let maxDistance = mouse.radius;
-        let force = (maxDistance - distance) / maxDistance;
-        let directionX = forceDirectionX * force * this.density;
-        let directionY = forceDirectionY * force * this.density;
+        // Efek Berdetak Otomatis (Beating Effect)
+        // Math.sin(tick) menciptakan gerakan naik turun yang halus
+        let beat = 1 + Math.sin(tick) * 0.1; 
+        
+        let targetX = this.baseX * beat;
+        let targetY = this.baseY * beat;
 
-        if (distance < mouse.radius) {
-            this.x -= directionX;
-            this.y -= directionY;
-        } else {
-            if (this.x !== this.baseX) {
-                let dx = this.x - this.baseX;
-                this.x -= dx / 10;
-            }
-            if (this.y !== this.baseY) {
-                let dy = this.y - this.baseY;
-                this.y -= dy / 10;
-            }
-        }
+        // Gerakan halus menuju posisi detak
+        this.x += (targetX - this.x) * 0.1;
+        this.y += (targetY - this.y) * 0.1;
     }
 }
 
 function init() {
     particles = [];
-    // Membuat titik-titik koordinat berbentuk hati
-    for (let i = 0; i < Math.PI * 2; i += 0.05) {
+    const step = 0.02; // Semakin kecil angka ini, bintik semakin padat
+    
+    // Looping untuk membuat bintik-bintik di area hati
+    for (let i = 0; i < Math.PI * 2; i += step) {
         // Rumus Parametrik Hati
-        let x = 16 * Math.pow(Math.sin(i), 3);
-        let y = -(13 * Math.cos(i) - 5 * Math.cos(2 * i) - 2 * Math.cos(3 * i) - Math.cos(4 * i));
-        
-        // Skala dan posisi di tengah layar
-        particles.push(new Particle(canvas.width/2 + x * 15, canvas.height/2 + y * 15));
-    }
-}
+        const r = 15; // Skala ukuran
+        let tx = r * 16 * Math.pow(Math.sin(i), 3);
+        let ty = -r * (13 * Math.cos(i) - 5 * Math.cos(2 * i) - 2 * Math.cos(3 * i) - Math.cos(4 * i));
 
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < particles.length; i++) {
-        particles[i].draw();
-        particles[i].update();
-    }
-    requestAnimationFrame(animate);
-}
-
-init();
-animate();
-
-// Resizing canvas jika jendela diubah ukurannya
-window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    init();
-});
+        // Untuk mengisi bagian dalam, kita tarik garis dari pusat (0,0) ke tepi (tx,ty)
+        for (let j = 0; j < 1; j += 0

@@ -5,12 +5,37 @@
 }
 
 body {
-    overflow: hidden; /* Menghilangkan scrollbar */
-    background: black;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #0d0a1b, #2a0b3f); /* Gradasi background yang lebih menarik */
+    font-family: 'Pacifico', cursive; /* Font yang lebih artistik */
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 #canvas1 {
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 1; /* Pastikan canvas di bawah teks */
+}
+
+.message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 2; /* Pastikan teks di atas canvas */
+    pointer-events: none; /* Agar tidak menghalangi interaksi mouse dengan canvas */
+}
+
+.message h1 {
+    font-size: 4em;
+    margin-bottom: 20px;
+    color: #ffcccc; /* Warna teks yang lebih lembut */
+}
+
+.message p {
+    font-size: 1.5em;
+    color: #ffeeee;
 }
